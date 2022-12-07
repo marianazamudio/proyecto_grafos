@@ -1,35 +1,47 @@
 % Limpiar ventana de comandos y workspace 
 clc;
 clear all;
-primero=1
+
 % Variables para guardar resultados 
 caminos_h = [];
 ciclos_h = [];
 caminos_e = [];
 ciclos_e = [];
 
-% Matriz de entrada que representa un grafo
-matriz = [0 1 0 ;
-          0 0 1 ;
-          1 0 0];
+fprintf('Ingrese la matriz de la siguiente manera:\n')
+fprintf('Si A = 1 2 3\n')
+fprintf('       4 5 6\n')
+fprintf('\nEntonces:\n')
+fprintf('A = [1,2,3; 4,5,6]\n')
+fprintf('O también:\n')
+fprintf('A = [1 2 3; 4 5 6]\n')
 
-%         a b c d e f g h i 
-matriz = [0 1 0 1 0 0 0 0 0;  %a
-          0 0 1 0 0 0 0 0 0;  %b
-          0 0 0 0 0 1 0 0 1;  %c
-          0 0 0 0 1 0 1 0 0;  %d
-          0 1 0 0 0 1 0 0 0;  %e
-          0 0 1 0 0 0 0 0 1;  %f
-          1 0 0 0 0 0 0 1 0;  %g
-          0 0 0 0 0 0 1 0 0;  %h
-          0 0 0 0 0 0 0 1 0;] %i
-      
-% TODO: 
-% Detectar si la matriz es cuadrada
-% Detectar si la matriz tiene solo 0's y 1's, si tiene otros valores,
-% entonces:
-% convertir a 1 y 0s grafos con aristas ponderados. 
-matriz_secundaria = [];
+A= input('\nIngrese una matriz que represente un grafo\n');
+
+% Verficar que la matriz que se ingreso sea cuadrada
+[numReng,numColum] = size(A);
+cuadrada = isequal(numReng, numColum');
+%Si la matriz no es cuadrada, solicitar una nueva
+if (cuadrada == 0)
+    A=input('\nIngrese una matriz cuadrada\n');
+end
+
+% Numero de elementos de la matriz proporcionada
+numero = numel(A);
+% Definir una matriz de ceros de la misma dimension de A
+matriz = zeros(size(A));
+
+% Hacer una matriz secundaria para las que tienen aristas ponderdas
+for i = (1:1:numero)
+    if (A(i) > 0)
+        matriz(i) = 1;
+    else
+        matriz(i)= 0;
+    end
+end
+matriz;
+
+
 
 % Determinar si el grafo es dirigido o no dirigido
 % Un grafo dirigido se representa por medio de una matriz simétrica
@@ -61,6 +73,8 @@ if (dirigido == 1)
     end
     % Imprimir resultados
     matriz_a_grafo(matriz, 1)
+    disp(" ")
+    disp("=============================================================")
     disp("En la ventana emergente se muestra el grafo ")
     disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
     caminos_h
@@ -171,11 +185,11 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
 end
             
 function matriz_a_grafo(matriz, dirigido)
-    tamano = size(matriz)
+    tamano = size(matriz);
     % Lista que almacena vértice donde empieza arista
-    x = []
+    x = [];
     % Lista que almacena vértice donde termina arista
-    y = []
+    y = [];
     
     % Determinar si el grafo es dirigido
     if dirigido == 1
@@ -188,7 +202,7 @@ function matriz_a_grafo(matriz, dirigido)
                 end
             end
         end
-        G = digraph(x,y)
+        G = digraph(x,y);
         
     end
     
