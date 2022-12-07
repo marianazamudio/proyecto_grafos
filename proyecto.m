@@ -1,7 +1,7 @@
-% limpiar ventana de comandos y workspace 
+% Limpiar ventana de comandos y workspace 
 clc;
 clear all;
-
+primero=1
 % Variables para guardar resultados 
 caminos_h = [];
 ciclos_h = [];
@@ -57,8 +57,15 @@ if (dirigido == 1)
         % Llamar a la función que busca los caminos y ciclos hamiltoneanos,
         % del grafo representado por la matriz y que comienzan desde el
         % vector actual
-        [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_visitados, v_visitados, 1)
+        [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_visitados, v_visitados, 1);
     end
+    % Imprimir resultados
+    matriz_a_grafo(matriz, 1)
+    disp("En la ventana emergente se muestra el grafo ")
+    disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
+    caminos_h
+    disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
+    ciclos_h
     
     % -----[ NO DIRIGIDO ]-----%
     %Si el grafo es no dirigido ver si existen ciclos y caminos eulerianos
@@ -140,7 +147,7 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
             % Encuentra los vértices  accesibles desde el vértice actual
             % éstos se encuentran en el rénglon de la matriz
             % correspondiente al vértice actual.
-            vertices_accesibles = matriz(v_actual,:)
+            vertices_accesibles = matriz(v_actual,:);
            
             % Iterar entre vertices disponibles
             for pos = (1:length(vertices_accesibles))
@@ -153,7 +160,7 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
                         % vértices a los que se puede conectar pos, de
                         % manera que se vaya completando una parte más del
                         % ciclo/camino hamiltoniano
-                        encuentra_hamiltoniano(matriz, pos, v_no_visitados, v_visitados, 0)
+                        encuentra_hamiltoniano(matriz, pos, v_no_visitados, v_visitados, 0);
                         
                     else 
                         continue
@@ -163,5 +170,42 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
     end
 end
             
+function matriz_a_grafo(matriz, dirigido)
+    tamano = size(matriz)
+    % Lista que almacena vértice donde empieza arista
+    x = []
+    % Lista que almacena vértice donde termina arista
+    y = []
+    
+    % Determinar si el grafo es dirigido
+    if dirigido == 1
+        for fila = (1:tamano(1))
+            for columna =(1:tamano(1))
+                if matriz(fila,columna)==1
+                    x(end+1)= fila;
+                    y(end+1)=columna;
         
+                end
+            end
+        end
+        G = digraph(x,y)
         
+    end
+    
+    if dirigido == 0
+      for fila = (1:tamano(1))
+            for columna =(1:tamano(1))
+                if columna >= fila
+                    if matriz(fila,columna)==1
+                        x(end+1)= fila;
+                        y(end+1)=columna;
+                    end
+                end
+            end
+        end  
+        G = graph(x,y)  
+    end
+    plot(G)
+end
+
+
