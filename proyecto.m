@@ -25,93 +25,98 @@ cuadrada = isequal(numReng, numColum');
 if (cuadrada == 0)
     A=input('\nIngrese una matriz cuadrada\n');
 end
+conexion = conexo(A)
+if conexion
+    
+    % Numero de elementos de la matriz proporcionada
+    numero = numel(A);
+    % Definir una matriz de ceros de la misma dimension de A
+    matriz = zeros(size(A));
 
-% Numero de elementos de la matriz proporcionada
-numero = numel(A);
-% Definir una matriz de ceros de la misma dimension de A
-matriz = zeros(size(A));
-
-% Hacer una matriz secundaria para las que tienen aristas ponderdas
-for i = (1:1:numero)
-    if (A(i) > 0)
-        matriz(i) = 1;
-    else
-        matriz(i)= 0;
+    % Hacer una matriz secundaria para las que tienen aristas ponderdas
+    for i = (1:1:numero)
+        if (A(i) > 0)
+            matriz(i) = 1;
+        else
+            matriz(i)= 0;
+        end
     end
-end
-matriz;
+    matriz;
+
+    % Determinar si el grafo es dirigido o no dirigido
+    % Un grafo dirigido se representa por medio de una matriz simétrica
+    % Si una matriz es simétrica su transpuesta es igual a la matriz original
+    % Grafo dirigido    --> dirigido = 1
+    % Grafo no dirigido --> dirigido = 0
+    dirigido = not(isequal(A, A'));
+
+    % ----[ DIRIGIDO ]----%
+    % Si el grafo es dirigido ver si existen ciclos y caminos hamiltoneanos
+    if (dirigido == 1)
+        % Obtener tamaño de matriz
+        [renglon, columna] = size(matriz);
+        % Iterar entre vértices, para empezar a buscar caminos/ciclos
+        % hamiltoneanos que comiencen desde el vértice actual
+        for v_actual= (1:columna)
+            % Inicializar los vértices no visitados como un vector que
+            % contiene todos los vértices
+            v_no_visitados = (1:columna);
+
+            % Inicializar un vector vacío donde se irán almacenando los
+            % vértices visitados, al ir recorriendo los caminos/ciclos
+            v_visitados = [];
+
+            % Llamar a la función que busca los caminos y ciclos hamiltoneanos,
+            % del grafo representado por la matriz y que comienzan desde el
+            % vector actual
+            [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_visitados, v_visitados, 1);
+        end
+        % Imprimir resultados
+        matriz_a_grafo(matriz, 1)
+        disp(" ")
+        disp("=============================================================")
+        disp("En la ventana emergente se muestra el grafo ")
+        disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
+        caminos_h
+        disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
+        ciclos_h
 
 
 
-% Determinar si el grafo es dirigido o no dirigido
-% Un grafo dirigido se representa por medio de una matriz simétrica
-% Si una matriz es simétrica su transpuesta es igual a la matriz original
-% Grafo dirigido    --> dirigido = 1
-% Grafo no dirigido --> dirigido = 0
-dirigido = not(isequal(matriz, matriz'));
-
-% ----[ DIRIGIDO ]----%
-% Si el grafo es dirigido ver si existen ciclos y caminos hamiltoneanos
-if (dirigido == 1)
-    % Obtener tamaño de matriz
-    [renglon, columna] = size(matriz);
-    % Iterar entre vértices, para empezar a buscar caminos/ciclos
-    % hamiltoneanos que comiencen desde el vértice actual
-    for v_actual= (1:columna)
-        % Inicializar los vértices no visitados como un vector que
-        % contiene todos los vértices
-        v_no_visitados = (1:columna);
-        
-        % Inicializar un vector vacío donde se irán almacenando los
-        % vértices visitados, al ir recorriendo los caminos/ciclos
-        v_visitados = [];
-        
-        % Llamar a la función que busca los caminos y ciclos hamiltoneanos,
-        % del grafo representado por la matriz y que comienzan desde el
-        % vector actual
-        [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_visitados, v_visitados, 1);
-    end
-    % Imprimir resultados
-    matriz_a_grafo(matriz, 1)
-    disp(" ")
-    disp("=============================================================")
-    disp("En la ventana emergente se muestra el grafo ")
-    disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
-    caminos_h
-    disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
-    ciclos_h
-    
-    
-    
     % -----[ NO DIRIGIDO ]-----%
     %Si el grafo es no dirigido ver si existen ciclos y caminos eulerianos
     else
-    
-   
-end 
- 
-% si la matriz esta conformada solo de 1's y 0's entonces el grafo 
-% no es ponderado
-if not(isempty(find (A > 1))) == 1
-    if isempty(caminos_h) == 0
-        matriz_resultante = caminos_h;
-        [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
-        disp('El grafo ponderado tiene los siguientes caminos de menor peso')
-        c_menor_peso
-        disp('El menor peso es')
-        peso_menor
+    euleriano = es_par(matriz)
+        if euleriano
+        disp("El grafo proporcionado si es euleriano") 
+        disp("contiene al menos un camino o ciclo hamiltoniano")
+        
+        
+        end
+    end 
 
-    end
-    if isempty(ciclos_h) == 0
-        matriz_resultante = ciclos_h;
-        [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
-        disp('El grafo ponderado tiene los siguientes ciclos de menor peso')
-        c_menor_peso
-        disp('El menor peso es')
-        peso_menor
+    % si la matriz esta conformada solo de 1's y 0's entonces el grafo 
+    % no es ponderado
+    if not(isempty(find (A > 1))) == 1
+        if isempty(caminos_h) == 0
+            matriz_resultante = caminos_h;
+            [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+            disp('El grafo ponderado tiene los siguientes caminos de menor peso')
+            c_menor_peso
+            disp('El menor peso es')
+            peso_menor
+
+        end
+        if isempty(ciclos_h) == 0
+            matriz_resultante = ciclos_h;
+            [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+            disp('El grafo ponderado tiene los siguientes ciclos de menor peso')
+            c_menor_peso
+            disp('El menor peso es')
+            peso_menor
+        end
     end
 end
-
 %----------------------------------------------- %
 % Función que detecta si existen caminos o ciclos eulerianos en el 
 % grafo
@@ -133,7 +138,7 @@ function euleriano = es_par(matriz)
         end
     end
 
-    if impar == 0 && euleriano == 1; % Recorrido euleriano.
+    if impar == 0||impar==2; % Recorrido euleriano.
         euleriano = 1;
     else
         euleriano = 0;
@@ -380,4 +385,55 @@ c_menor_peso = [];
  end 
 end
 
-
+function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
+    % Determinar tamaño de la matriz
+    tamano = size(ciclos);
+    tamano = tamano(1);
+    % Crea matriz secundaria sin la ultima columna
+    ciclos_sec = ciclos(:,1:tamano-1);
+    ciclos_sin_rep = []
+    
+    
+    while (not(isempty(ciclos_sec)))
+        % Obtener el primer elemento
+        primer_elem = ciclos_sec(1,1);
+        % Guardar primer renglon en ciclos_sin_rep
+        ciclos_sin_rep(end+1,:) = ciclos_sec(1,:)
+        renglon_para_comparar = ciclos_sec(1,:)
+        % Eliminar primer renglon de ciclos_sec
+        ciclos_sec(1,:) = []
+        % Determinar tamaño de la matriz
+        tamano = size(ciclos_sec);
+        tamano = tamano(1);
+        % Inicializar renglones iguales
+        renglones_iguales = []
+        
+        % Recorrer renglones en ciclos_sec
+        for n =(1:tamano)
+            % Seleccionar todo el renglon n
+            renglon = ciclos_sec(n,:)
+            % Encontrar la posición del primer elemento del ciclo
+            % del cual se quiere determinar si está repetido
+            posicion_primer_elem = find(renglon==primer_elem);
+            % dividir renglon en 2, para ordenarlo
+            parte_1 = renglon(posicion_primer_elem:end)
+            parte_2 = renglon(1:posicion_primer_elem-1)
+            % ordenar vector
+            % si renglon ordenado es igual al ciclo del primer renglon de
+            % la matriz, ambos renglones representan el mismo ciclo
+            renglon_ordenado = [parte_1 parte_2]
+            disp("Hola 1")
+            renglon
+            renglon_para_comparar
+            if (renglon_ordenado == renglon_para_comparar)
+                disp("hola")
+                n
+                renglones_iguales = [renglones_iguales n(1)]
+            end
+            
+        end
+        % eliminar renglones iguales
+        ciclos_sec(renglones_iguales,:)=[];     
+    end
+    
+end
