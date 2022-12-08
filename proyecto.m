@@ -79,6 +79,8 @@ if conexion
         disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
         caminos_h
         disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
+        %ciclos_h = elimina_ciclos_repetidos(ciclos_h) %función no funciona
+        %bien por el momento
         ciclos_h
 
 
@@ -91,6 +93,39 @@ if conexion
         disp("El grafo proporcionado si es euleriano") 
         disp("contiene al menos un camino o ciclo hamiltoniano")
         
+            % Iterar entre vértices, para empezar a buscar caminos/ciclos
+            % eulerianos que comiencen desde el vértice actual
+            for vertice_inicial = 1:length(matriz) 
+
+                % Inicializar un vector vacío donde se irán almacenando los
+                % vértices visitados, al ir recorriendo los caminos/ciclos
+                v_visitados = []; 
+
+                % 0 cuando el vector actual es el primero de todo el camino/ciclo
+                v_anterior = 0;  
+
+                % Llamar a la función que busca los caminos y ciclos eulerianos
+                % del grafo representado por la matriz y que comienzan desde el
+                % vector actual
+                v_actual = vertice_inicial;
+                [caminos_e, ciclos_e] = encuentra_euleriano(matriz, v_visitados, v_actual, v_anterior, vertice_inicial);
+            end
+          % Impresión de resultados.
+          fprintf("Caminos eulerianos :\n\n");
+          if caminos_e
+            fprintf('     %d caminos encontrados:\n\n', length(caminos_e));
+            disp(caminos_e);
+          else 
+            fprintf("     No hay caminos eulerianos.\n\n");
+          end
+
+         fprintf("Ciclos eulerianos:\n\n");
+         if ciclos_e
+            fprintf("     %d ciclos encontrados\n\n", length(ciclos_e));
+            disp(ciclos_e);
+         else 
+            fprintf("     No hay ciclos eulerianos.\n\n");
+         end    
         
         end
     end 
@@ -264,6 +299,84 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
     end
 end
 
+%-------------------------------------------------------------------%
+% encuentra_euleriano
+% función que encuentra los caminos y/o ciclos eulerianos del 
+% grafo representado por una matriz
+%
+% Entradas:
+%   matriz: matriz cuadrada que representa un grafo
+%   v_actual: vértice actual, a partir del cual se busca un camino/ciclo e
+%   v_visitados: vector columna con los vértices que ya forman parte del
+%                camino/ciclo formado hasta el momento
+%   v_anterior: siempre es 0 cuando el vector actual es el primero de 
+%               todo el camino/ciclo
+%   v_inicial: vertice del cual se empezará a buscar un camino/ciclo e
+%
+% Salidas: 
+%   caminos_e: matriz, donde cada renglon es un camino euleriano
+%   ciclos_e: matriz, donde cada renglon es un ciclo euleriano
+%-------------------------------------------------------------------%
+function[caminos_e, ciclos_e] = encuentra_euleriano(matriz, v_visitados, v_actual, v_anterior, v_inicial)
+    % Declaración de variables
+    global caminos_e;
+    global ciclos_e;
+    
+    % Añadir vértice actual a los visitados
+    v_visitados(end+1) = v_actual;
+    if (not(v_anterior == 0))
+        % Eliminar arista recorrida anteriormente
+        matriz(v_actual,v_anterior)= 0;
+        matriz(v_anterior,v_actual)= 0;
+    end
+    
+    % CASO BASE: matriz con solo ceros (no hay más aristas por recorrer)
+    % Determinar tamaño de la matriz
+    tamano = size(matriz);
+    tamano = tamano(1);
+    % Generar matriz de 0's
+    ceros = zeros(tamano);
+    % Determinar si la matriz tiene solo 0's
+    if (matriz == ceros)
+        % Si el vertice final es el mismo que el inicial, es un ciclo.
+        if isequal(v_actual,v_inicial) 
+            ciclos_e(end+1,:) = v_visitados;
+        % Si no son iguales entonces es un camino.
+        else 
+            caminos_e(end+1,:) = v_visitados; 
+        end
+    
+    % CASO RECURSIVO: aún quedan aristas por recorrer
+    else
+        % Encuentra todos los vértices accesibles desde el vértice actual
+        vertices_accesibles = matriz(v_actual,:);
+        vertices_accesibles = find(vertices_accesibles == 1);
+        
+        % Iterar entre vértices disponibles
+        for vertice = vertices_accesibles
+            % checar que los vértices accesibles tengan otros vértices
+            % accesibles.
+            % Tomar renglon de conexiones del vertice.
+            renglon = matriz(vertice,:);
+            r_tamano = size(renglon);
+            renglon_cero = zeros(r_tamano(1), r_tamano(2));
+            if isequal(renglon_cero, renglon)
+                continue;
+            else
+                % Llamar a la función recursiva para encontrar los vértices a
+                % los que se puede conectar el vértice actual. De manera que se
+                % vaya completando una parte más del camino euleriano
+                encuentra_euleriano(matriz,v_visitados,vertice, v_actual,v_inicial);
+            end
+        end  
+    end
+end
+
+
+
+
+
+
 % --------------------------------------------------------------------------------
 % matriz_a _grafo
 % Función que representa gráficamente l representación matricial de un
@@ -384,51 +497,59 @@ c_menor_peso = [];
          end
  end 
 end
-
+% --------------------------------%
+% Función que elimina los ciclos repetidos 
+% Entrada:
+%   ciclos: matriz, donde cada renglon es un ciclo
+% Salida:
+%  ciclos_sin_rep: matriz donde cada renglon es un ciclo
+% --------------------------------%
 function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
     % Determinar tamaño de la matriz
     tamano = size(ciclos);
     tamano = tamano(1);
     % Crea matriz secundaria sin la ultima columna
     ciclos_sec = ciclos(:,1:tamano-1);
-    ciclos_sin_rep = []
+    ciclos_sin_rep = [];
     
     
     while (not(isempty(ciclos_sec)))
         % Obtener el primer elemento
         primer_elem = ciclos_sec(1,1);
         % Guardar primer renglon en ciclos_sin_rep
-        ciclos_sin_rep(end+1,:) = ciclos_sec(1,:)
-        renglon_para_comparar = ciclos_sec(1,:)
+        ciclos_sin_rep(end+1,:) = ciclos_sec(1,:);
+        renglon_para_comparar = ciclos_sec(1,:);
         % Eliminar primer renglon de ciclos_sec
-        ciclos_sec(1,:) = []
+        ciclos_sec(1,:) = [];
         % Determinar tamaño de la matriz
         tamano = size(ciclos_sec);
         tamano = tamano(1);
         % Inicializar renglones iguales
-        renglones_iguales = []
+        renglones_iguales = [];
         
         % Recorrer renglones en ciclos_sec
         for n =(1:tamano)
             % Seleccionar todo el renglon n
-            renglon = ciclos_sec(n,:)
+            renglon = ciclos_sec(n,:);
             % Encontrar la posición del primer elemento del ciclo
             % del cual se quiere determinar si está repetido
             posicion_primer_elem = find(renglon==primer_elem);
             % dividir renglon en 2, para ordenarlo
-            parte_1 = renglon(posicion_primer_elem:end)
-            parte_2 = renglon(1:posicion_primer_elem-1)
+            parte_1 = renglon(posicion_primer_elem:end);
+            parte_2 = renglon(1:posicion_primer_elem-1);
             % ordenar vector
             % si renglon ordenado es igual al ciclo del primer renglon de
             % la matriz, ambos renglones representan el mismo ciclo
-            renglon_ordenado = [parte_1 parte_2]
-            disp("Hola 1")
-            renglon
+            renglon_ordenado = [parte_1 parte_2];
+            
+            size(renglon_ordenado)
+            size(renglon_para_comparar)
             renglon_para_comparar
-            if (renglon_ordenado == renglon_para_comparar)
-                disp("hola")
-                n
-                renglones_iguales = [renglones_iguales n(1)]
+            renglon_ordenado
+            isequal(renglon_ordenado,renglon_para_comparar) %***
+            pause() %****
+            if isequal(renglon_ordenado,renglon_para_comparar)
+                renglones_iguales = [renglones_iguales n(1)];
             end
             
         end
