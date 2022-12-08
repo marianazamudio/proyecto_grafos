@@ -81,11 +81,86 @@ if (dirigido == 1)
     disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
     ciclos_h
     
+    
+    
     % -----[ NO DIRIGIDO ]-----%
     %Si el grafo es no dirigido ver si existen ciclos y caminos eulerianos
     else
     
+   
+end 
+ 
+% si la matriz esta conformada solo de 1's y 0's entonces el grafo 
+% no es ponderado
+if not(isempty(find (A > 1))) == 1
+    if isempty(caminos_h) == 0
+        matriz_resultante = caminos_h;
+        [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+        disp('El grafo ponderado tiene los siguientes caminos de menor peso')
+        c_menor_peso
+        disp('El menor peso es')
+        peso_menor
+
+    end
+    if isempty(ciclos_h) == 0
+        matriz_resultante = ciclos_h;
+        [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+        disp('El grafo ponderado tiene los siguientes ciclos de menor peso')
+        c_menor_peso
+        disp('El menor peso es')
+        peso_menor
+    end
+end
+
+%----------------------------------------------- %
+% Función que detecta si existen caminos o ciclos eulerianos en el 
+% grafo
+% Entradas: 
+%  matriz: representación matricial del grafo
+% Salidas:
+%   euleriano: 1 si es euleriano
+%              0 si no es euleriano
+%----------------------------------------------- %
+function euleriano = es_par(matriz)
+    impar = 0; % Variable para contar los vertices con grado impar.
+    reng = size(matriz); % Obtención de tamaño de la matriz.
     
+    for i=1:reng 
+        grado = numel(find(matriz(i,:))); % Obtención del grado de cada 
+                                          % vertice.
+        if rem(grado,2) ~= 0    % Si se tiene residuo en la división
+            impar = impar + 1;  % de grado entre dos, es impar.
+        end
+    end
+
+    if impar == 0 && euleriano == 1; % Recorrido euleriano.
+        euleriano = 1;
+    else
+        euleriano = 0;
+        disp('NO ES EULERIANO')
+    end
+end
+%-------------------------------------------------------------------------%
+% Función que determina si el grafo es conexo
+% Entrada:
+%   matriz: representación matricial del grafo
+% Salida:
+%   conexión: 1 --- grafo es conexo
+%             0 --- grafo disconexo
+%-------------------------------------------------------------------------%
+function conexion = conexo(matriz)
+    Col = sum(matriz);    % Suma valores de cada columna.
+    Reng = sum(matriz,2); % Suma valores de cada renglón.
+    
+    c = find(Col == 0, 1);   % Columnas con sumatoria igual a 0.
+    r = find(Reng == 0, 1);  % Renglones con sumatoria igual a 0.
+    
+    if ~isempty(c) && ~isempty(r) % Buscando vector desconectado.
+        disp('GRAFO DESCONECTADO')
+        conexion = 0; % Desconectado
+    else 
+        conexion = 1; % Conectado
+    end
 end 
 
 %-------------------------------------------------------------------%
@@ -183,15 +258,29 @@ function [caminos_h, ciclos_h] = encuentra_hamiltoniano(matriz, v_actual, v_no_v
             end
     end
 end
-            
+
+% --------------------------------------------------------------------------------
+% matriz_a _grafo
+% Función que representa gráficamente l representación matricial de un
+% grafo en una ventana emergente. 
+% Entradas:
+%   matriz:
+%   dirigido: 1 --> indica que el grafo representado por la matriz es dirigido
+%             0 --> indica que el grafo representado por la matriz es no dirigido
+% Salidas: 
+%   ventana emergente
+% ---------------------------------------------------------------------------------
 function matriz_a_grafo(matriz, dirigido)
+    % Encontrar el tamaño de la matriz
     tamano = size(matriz);
     % Lista que almacena vértice donde empieza arista
     x = [];
     % Lista que almacena vértice donde termina arista
     y = [];
-    
     % Determinar si el grafo es dirigido
+    % Si el grafo es dirigido, se revisa toda la matriz, para almacenar en
+    % 2 listas distintas el vértice donde empieza y el vertice donde
+    % terminan las aristas del grafo.
     if dirigido == 1
         for fila = (1:tamano(1))
             for columna =(1:tamano(1))
@@ -202,10 +291,14 @@ function matriz_a_grafo(matriz, dirigido)
                 end
             end
         end
+        % Generar grafo dirigido
         G = digraph(x,y);
         
     end
     
+    % Si el grafo es no dirigido, se revisa solo la diagonal principal y la parte superior a ésta
+    % para almacenar en 2 listas distintas el vértice donde empieza y el vertice donde terminan las aristas del grafo.
+    % Esto se hace para evitar generar aristas duplicadas. 
     if dirigido == 0
       for fila = (1:tamano(1))
             for columna =(1:tamano(1))
@@ -220,6 +313,71 @@ function matriz_a_grafo(matriz, dirigido)
         G = graph(x,y)  
     end
     plot(G)
+end
+
+%*************************************************************************
+
+%------------------------------------------------------------------------
+% función que encuentra los caminos y/o ciclos hamiltonianos/eulerianos de menor 
+% peso del grafo con aristas ponderadas
+%
+% Entradas:
+% A: matriz cuadrada que representa un grafo con aristas ponderadas es
+%    la matriz que ingresa el usuario
+% matriz_resultante: es la matriz que contiene todos los caminos y/o
+%                    ciclos (sin que se repitan) del grafo
+% Salidas:
+% caminos_menores: es una matriz que en donde cada uno de sus renglones 
+% representa un camino de menor peso
+%------------------------------------------------------------------------
+function [c_menor_peso, peso_menor] = encuentra_c_menores(A, matriz_resultante)
+c_menor_peso = [];
+% con este ciclo se revisan todos los caminos y/o ciclos del grafo
+% el número de veces que se repite es igual al numero de columnas de
+% la matriz resultante
+ for j = (1:length(matriz_resultante(:,1)))
+     % se extrae el renglón de la matriz resultante para tomarlo como
+     % el camino actual
+     camino_actual = matriz_resultante(j,:);
+     % en la variable suma se guarda el resultado del peso del camino
+     suma = 0;
+     % con este ciclo se va realizando la suma de todas las aristas
+     % el número de veces que se repite es igual al número de elementos 
+     % del renglón menos 1
+    for k = (1:length(matriz_resultante(1,:))-1)
+        % se identifica el valor del elemento en la matriz que representa
+        % la primera arista del camino y/o ciclo
+        peso = A(matriz_resultante(j,k),matriz_resultante(j,k+1));
+        % se va realizando la suma de todas las aristas del camino y/o
+        % ciclo
+        suma = suma + peso;
+    end   
+         % solo en la primera iteración se le asigna a la variable
+         % peso_menor la suma obtenida
+         if (j == 1)
+            peso_menor = suma;
+         % se agrega el camino actual a la matriz que contiene los caminos
+         % y/o ciclos menores
+            c_menor_peso = camino_actual;
+            
+         else
+             % en la segunda iteración, si la nueva suma obtenida es menor
+             % a la variable peso menor, significa que hay un camino de
+             % menor ponderación entonces se reemplazan los valores en
+             % peso_menor y en caminos menores
+             if (suma < peso_menor)
+               peso_menor = suma;
+               c_menor_peso = camino_actual;
+             % si la nueva suma obtenida es igual al valor guardado en 
+             % peso_menor significa que puede haber más de un camino y/o 
+             % ciclo con el mismo peso, si es el caso el camino actual se
+             % agrega como un nuevo renglón a la matriz de caminos_menores
+             % para no reemplazar el ya existente con el mismo peso
+            elseif (suma == peso_menor)
+                c_menor_peso(end + 1,:) = camino_actual;
+            end
+         end
+ end 
 end
 
 
