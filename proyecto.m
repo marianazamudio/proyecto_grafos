@@ -17,7 +17,9 @@ fprintf('O también:\n')
 fprintf('A = [1 2 3; 4 5 6]\n')
 
 A= input('\nIngrese una matriz que represente un grafo\n');
-
+while (isempty(A) == 1)
+    A= input('\nIngrese una matriz que represente un grafo\n');
+end
 % Verficar que la matriz que se ingreso sea cuadrada
 [numReng,numColum] = size(A);
 cuadrada = isequal(numReng, numColum');
@@ -25,7 +27,7 @@ cuadrada = isequal(numReng, numColum');
 if (cuadrada == 0)
     A=input('\nIngrese una matriz cuadrada\n');
 end
-conexion = conexo(A)
+conexion = aislado(A)
 if conexion
     
     % Numero de elementos de la matriz proporcionada
@@ -109,7 +111,11 @@ if conexion
                 v_actual = vertice_inicial;
                 [caminos_e, ciclos_e] = encuentra_euleriano(matriz, v_visitados, v_actual, v_anterior, vertice_inicial);
             end
-          % Impresión de resultados.
+          % Impresión de resultados
+          matriz_a_grafo(matriz, 0)
+          disp(" ")
+          disp("=============================================================")
+          disp("En la ventana emergente se muestra el grafo ")
           fprintf("Caminos eulerianos :\n\n");
           if caminos_e
             fprintf('     %d caminos encontrados:\n\n', length(caminos_e));
@@ -132,6 +138,7 @@ if conexion
     % si la matriz esta conformada solo de 1's y 0's entonces el grafo 
     % no es ponderado
     if not(isempty(find (A > 1))) == 1
+        % caminos/ciclos hamiltonianos de menor peso
         if isempty(caminos_h) == 0
             matriz_resultante = caminos_h;
             [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
@@ -139,11 +146,12 @@ if conexion
             c_menor_peso
             disp('El menor peso es')
             peso_menor
-            % Seleccionar uno de los caminos mas cortos
-            grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
-            q = c_menor_peso(1,:);
-            highlight(grafo,q,'NodeColor','m','EdgeColor','m')
-
+            % Mostrar las grafos con los caminos más cortos resaltados
+            for s = 1:(length(c_menor_peso(:,1)))
+                 grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
+                 q = c_menor_peso(s,:);
+                 highlight(grafo,q,'NodeColor','m','EdgeColor','m')
+            end
         end
         if isempty(ciclos_h) == 0
             matriz_resultante = ciclos_h;
@@ -151,15 +159,35 @@ if conexion
             disp('El grafo ponderado tiene los siguientes ciclos de menor peso')
             c_menor_peso
             disp('El menor peso es')
-            peso_menor
-            % Seleccionar uno de los caminos mas cortos
-            grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
-            q = c_menor_peso(1,:) ;
-            highlight(grafo,q,'NodeColor','m','EdgeColor','m')
-          
+            peso_menor 
         end
+        % caminos/ciclos eurelianos de menor peso
+        if isempty(caminos_e) == 0
+            matriz_resultante = caminos_e;
+            [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+            disp('El grafo ponderado tiene los siguientes caminos de menor peso')
+            c_menor_peso
+            disp('El menor peso es')
+            peso_menor
+            % Mostrar las grafos con los caminos más cortos resaltados
+            for s = 1:(length(c_menor_peso(:,1)))
+                 grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
+                 q = c_menor_peso(s,:);
+                 highlight(grafo,q,'NodeColor','m','EdgeColor','m')
+            end
+        end
+        if isempty(ciclos_e) == 0
+            matriz_resultante = ciclos_e;
+            [c_menor_peso, peso_menor] = encuentra_c_menores (A, matriz_resultante);
+            disp('El grafo ponderado tiene los siguientes ciclos de menor peso')
+            c_menor_peso
+            disp('El menor peso es')
+            peso_menor
+        end
+            
     end
 end
+
 %----------------------------------------------- %
 % Función que detecta si existen caminos o ciclos eulerianos en el 
 % grafo
@@ -176,6 +204,9 @@ function euleriano = es_par(matriz)
     for i=1:reng 
         grado = numel(find(matriz(i,:))); % Obtención del grado de cada 
                                           % vertice.
+        if matriz(i,i) == 1
+            grado = grado + 1
+        end
         if rem(grado,2) ~= 0    % Si se tiene residuo en la división
             impar = impar + 1;  % de grado entre dos, es impar.
         end
@@ -189,14 +220,14 @@ function euleriano = es_par(matriz)
     end
 end
 %-------------------------------------------------------------------------%
-% Función que determina si el grafo es conexo
+% Función que determina si el grafo un vértice aislados
 % Entrada:
 %   matriz: representación matricial del grafo
 % Salida:
-%   conexión: 1 --- grafo es conexo
-%             0 --- grafo disconexo
+%   conexión: 1 --- grafo no tiene un vértice aislado
+%             0 --- grafo tiene un vértice aislado
 %-------------------------------------------------------------------------%
-function conexion = conexo(matriz)
+function conexion = aislado(matriz)
     Col = sum(matriz);    % Suma valores de cada columna.
     Reng = sum(matriz,2); % Suma valores de cada renglón.
     
@@ -204,10 +235,10 @@ function conexion = conexo(matriz)
     r = find(Reng == 0, 1);  % Renglones con sumatoria igual a 0.
     
     if ~isempty(c) && ~isempty(r) % Buscando vector desconectado.
-        disp('GRAFO DESCONECTADO')
-        conexion = 0; % Desconectado
+        disp('GRAFO CON VÉRTICE AISLADO')
+        conexion = 0; % Vértice aislado
     else 
-        conexion = 1; % Conectado
+        conexion = 1; % Sin vértices aislados
     end
 end 
 
@@ -436,7 +467,7 @@ function matriz_a_grafo(matriz, dirigido)
                 end
             end
         end  
-        G = graph(x,y)  
+        G = graph(x,y)  ;
     end
     plot(G)
 end
