@@ -79,9 +79,9 @@ if conexion
         disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
         caminos_h
         disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
-        %ciclos_h = elimina_ciclos_repetidos(ciclos_h) %función no funciona
+        ciclos_h = elimina_ciclos_repetidos(ciclos_h) %función no funciona
         %bien por el momento
-        ciclos_h
+        %ciclos_h
 
 
 
@@ -506,10 +506,11 @@ end
 % --------------------------------%
 function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
     % Determinar tamaño de la matriz
+    ciclos;
     tamano = size(ciclos);
     tamano = tamano(1);
     % Crea matriz secundaria sin la ultima columna
-    ciclos_sec = ciclos(:,1:tamano-1);
+    ciclos_sec = ciclos(:,1:tamano);
     ciclos_sin_rep = [];
     
     
@@ -542,12 +543,6 @@ function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
             % la matriz, ambos renglones representan el mismo ciclo
             renglon_ordenado = [parte_1 parte_2];
             
-            size(renglon_ordenado)
-            size(renglon_para_comparar)
-            renglon_para_comparar
-            renglon_ordenado
-            isequal(renglon_ordenado,renglon_para_comparar) %***
-            pause() %****
             if isequal(renglon_ordenado,renglon_para_comparar)
                 renglones_iguales = [renglones_iguales n(1)];
             end
