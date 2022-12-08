@@ -32,7 +32,8 @@ if conexion
     numero = numel(A);
     % Definir una matriz de ceros de la misma dimension de A
     matriz = zeros(size(A));
-
+    % Determinar si el grafo es ponderado
+    ponderado = any(any(A>1))
     % Hacer una matriz secundaria para las que tienen aristas ponderdas
     for i = (1:1:numero)
         if (A(i) > 0)
@@ -79,9 +80,7 @@ if conexion
         disp('El grafo dirigido tiene los siguientes caminos hamiltoneanos')
         caminos_h
         disp('El grafo dirigido tiene los siguientes ciclos hamiltoneanos')
-        ciclos_h = elimina_ciclos_repetidos(ciclos_h) %función no funciona
-        %bien por el momento
-        %ciclos_h
+        ciclos_h = elimina_ciclos_repetidos(ciclos_h) 
 
 
 
@@ -140,6 +139,10 @@ if conexion
             c_menor_peso
             disp('El menor peso es')
             peso_menor
+            % Seleccionar uno de los caminos mas cortos
+            grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
+            q = c_menor_peso(1,:);
+            highlight(grafo,q,'NodeColor','m','EdgeColor','m')
 
         end
         if isempty(ciclos_h) == 0
@@ -149,6 +152,11 @@ if conexion
             c_menor_peso
             disp('El menor peso es')
             peso_menor
+            % Seleccionar uno de los caminos mas cortos
+            grafo = matriz_a_grafo_ponderado(matriz, dirigido, A);
+            q = c_menor_peso(1,:) ;
+            highlight(grafo,q,'NodeColor','m','EdgeColor','m')
+          
         end
     end
 end
@@ -552,4 +560,63 @@ function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
         ciclos_sec(renglones_iguales,:)=[];     
     end
     
+end
+
+
+function grafo = matriz_a_grafo_ponderado(matriz, dirigido, A)
+  % Encontrar el tamaño de la matriz
+  tamano = size(matriz);
+  % Lista que almacena vértice donde empieza arista
+  x = [];
+  % Lista que almacena vértice donde termina arista
+  y = [];
+  % Lista que almacena la ponderacion de la arista
+  z = [];
+  % Determinar si el grafo es dirigido
+  % Si el grafo es dirigido, se revisa toda la matriz, para almacenar en
+  % 2 listas distintas el vértice donde empieza y el vertice donde
+  % terminan las aristas del grafo.
+  if dirigido == 1
+      for fila = (1:tamano(1))
+          for columna =(1:tamano(1))
+              if matriz(fila,columna)==1
+                  x(end+1)= fila;
+                  y(end+1)=columna;
+                  % en una tercera lista se guardan los valores
+                  % corespondientes a la arista formada por la
+                  % union (x, y)
+                  z(end+1) = A(fila,columna);
+
+              end
+          end
+      end
+      % Generar grafo dirigido
+      G = digraph(x,y,z);
+  end
+
+  % Si el grafo es no dirigido, se revisa solo la diagonal principal y la parte superior a ésta
+  % para almacenar en 2 listas distintas el vértice donde empieza y el vertice donde terminan las aristas del grafo.
+  % Esto se hace para evitar generar aristas duplicadas.
+  if dirigido == 0
+    for fila = (1:tamano(1))
+          for columna =(1:tamano(1))
+              if columna >= fila
+                  if matriz(fila,columna)==1
+                      x(end+1)= fila;
+                      y(end+1)=columna;
+                      % en una tercera lista se guardan los valores
+                      % corespondientes a la arista formada por la
+                      % union (x, y)
+                      z(end+1) = A(fila,columna);
+                  end
+              end
+          end
+    end
+    % generar grafo
+    G = graph(x,y,z);
+  end
+  % obtener grafica con ponderaciones
+
+  grafo = plot(G,'EdgeLabel',G.Edges.Weight, 'NodeColor','k','EdgeColor','k')
+
 end
