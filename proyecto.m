@@ -27,7 +27,7 @@ cuadrada = isequal(numReng, numColum');
 if (cuadrada == 0)
     A=input('\nIngrese una matriz cuadrada\n');
 end
-conexion = aislado(A)
+conexion = aislado(A);
 if conexion
     
     % Numero de elementos de la matriz proporcionada
@@ -76,6 +76,7 @@ if conexion
         end
         % Imprimir resultados
         matriz_a_grafo(matriz, 1)
+        
         disp(" ")
         disp("=============================================================")
         disp("En la ventana emergente se muestra el grafo ")
@@ -113,6 +114,7 @@ if conexion
             end
           % Impresión de resultados
           matriz_a_grafo(matriz, 0)
+          
           disp(" ")
           disp("=============================================================")
           disp("En la ventana emergente se muestra el grafo ")
@@ -205,7 +207,7 @@ function euleriano = es_par(matriz)
         grado = numel(find(matriz(i,:))); % Obtención del grado de cada 
                                           % vertice.
         if matriz(i,i) == 1
-            grado = grado + 1
+            grado = grado +1
         end
         if rem(grado,2) ~= 0    % Si se tiene residuo en la división
             impar = impar + 1;  % de grado entre dos, es impar.
@@ -220,7 +222,7 @@ function euleriano = es_par(matriz)
     end
 end
 %-------------------------------------------------------------------------%
-% Función que determina si el grafo un vértice aislados
+% Función que determina si el grafo tiene un vértice aislado
 % Entrada:
 %   matriz: representación matricial del grafo
 % Salida:
@@ -228,17 +230,12 @@ end
 %             0 --- grafo tiene un vértice aislado
 %-------------------------------------------------------------------------%
 function conexion = aislado(matriz)
-    Col = sum(matriz);    % Suma valores de cada columna.
-    Reng = sum(matriz,2); % Suma valores de cada renglón.
-    
-    c = find(Col == 0, 1);   % Columnas con sumatoria igual a 0.
-    r = find(Reng == 0, 1);  % Renglones con sumatoria igual a 0.
-    
-    if ~isempty(c) && ~isempty(r) % Buscando vector desconectado.
-        disp('GRAFO CON VÉRTICE AISLADO')
-        conexion = 0; % Vértice aislado
-    else 
-        conexion = 1; % Sin vértices aislados
+   for i = 1:length(matriz)
+        if matriz(i,:) == 0 & matriz(:,i) == 0
+            conexion = 0;
+        else
+            conexion = 1;
+        end
     end
 end 
 
@@ -467,8 +464,9 @@ function matriz_a_grafo(matriz, dirigido)
                 end
             end
         end  
-        G = graph(x,y)  ;
+        G = graph(x,y)  
     end
+    figure(1)
     plot(G)
 end
 
@@ -592,8 +590,21 @@ function ciclos_sin_rep = elimina_ciclos_repetidos(ciclos)
     end
     
 end
-
-
+% --------------------------------------------------------------------------------
+% matriz_a _grafo_ponderaro
+% Función que representa gráficamente la representación matricial de un
+% grafo con aristas ponderadas en una ventana emergente. 
+% Entradas:
+%   matriz:
+%   dirigido: 1 --> indica que el grafo representado por la matriz es dirigido
+%             0 --> indica que el grafo representado por la matriz es no dirigido
+%   A: matriz definida por el usuario
+% Salidas: 
+%   grafo_ponderado: ventana emergente donde se muestra el grafo con
+%   ponderaciones en las aristas
+%   grafo: ventana emergente donde se muestra el grafo con el camino
+%   de menor peso resaltado
+% ---------------------------------------------------------------------------------
 function grafo = matriz_a_grafo_ponderado(matriz, dirigido, A)
   % Encontrar el tamaño de la matriz
   tamano = size(matriz);
@@ -647,7 +658,7 @@ function grafo = matriz_a_grafo_ponderado(matriz, dirigido, A)
     G = graph(x,y,z);
   end
   % obtener grafica con ponderaciones
-
+  figure(2)
   grafo = plot(G,'EdgeLabel',G.Edges.Weight, 'NodeColor','k','EdgeColor','k')
 
 end
